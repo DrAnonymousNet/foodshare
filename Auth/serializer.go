@@ -7,7 +7,6 @@ import (
 
 	"errors"
 
-	auth "github.com/DrAnonymousNet/foodshare/Auth"
 	core "github.com/DrAnonymousNet/foodshare/Core"
 )
 
@@ -25,8 +24,8 @@ func (c *CreateUserRequest)Bind(r *http.Request) error{
 		return errors.New("email is required")
 	}
 	
-	var user auth.User
-	core.DB.Model(&auth.User{}).Where("Email = ?", c.Email).First(&user)
+	var user User
+	core.DB.Model(&User{}).Where("Email = ?", c.Email).First(&user)
 	if user.ID != 0 {
 		return errors.New("email alraedy picked")
 	}
@@ -35,8 +34,8 @@ func (c *CreateUserRequest)Bind(r *http.Request) error{
 	}
 	//TODO Validate strong password
 
-	c.FirstName = strings.Title(c.FirstName)
-	c.LastName = strings.Title(c.LastName)
+	c.FirstName = strings.ToTitle(c.FirstName)
+	c.LastName = strings.ToTitle(c.LastName)
 	return nil
 	
 }

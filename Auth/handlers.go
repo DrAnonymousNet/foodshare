@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"os"
 
-	auth "github.com/DrAnonymousNet/foodshare/Auth"
 	core "github.com/DrAnonymousNet/foodshare/Core"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
@@ -13,8 +12,8 @@ import (
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body into a CreateUserRequest struct
 
-	var user auth.User
-	data := &auth.CreateUserRequest{}
+	var user User
+	data := &CreateUserRequest{}
 	if err := render.Bind(r, data); err != nil {
 		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, map[string]string{"error": "Invalid request"})
@@ -56,8 +55,8 @@ func generateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
   //Retrieve the user with the username
-	var user auth.User
-	core.DB.Model(&auth.User{}).Where("username = ?", auth_data.username).First(&user)
+	var user User
+	core.DB.Model(&User{}).Where("username = ?", auth_data.username).First(&user)
 
 	err := user.ComparePassword(auth_data.password)
 	if err != nil {
