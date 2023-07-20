@@ -3,7 +3,7 @@ package foodshare
 import (
 	"time"
 
-	accounts "github.com/DrAnonymousNet/foodshare/auth"
+	auth "github.com/DrAnonymousNet/foodshare/Auth"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -13,7 +13,7 @@ type Donation struct {
 	UID             uuid.UUID
 	Title           string
 	DonorID         uint8
-	User            accounts.User    `gorm:"foreignKey:DonorID"`
+	User            auth.User    `gorm:"foreignKey:DonorID"`
 	DonatedObjType  DonatableObjType `gorm:"type:ENUM('FoodStuff', 'Cloths', 'MedicalSupplies', 'SchoolSupplies', 'PersonalCareSupplies', 'BooksAndToys')"`
 	DonationDate    time.Time
 	PickUpAddress   DonationStatusType `gorm:"type:ENUM('Pending', 'PickedUp')"`
@@ -24,7 +24,7 @@ type DonationRequest struct {
 	gorm.Model
 	UID                uuid.UUID
 	RequestorID        uint8
-	User               accounts.User `gorm:"foreignKey:RequestorID"`
+	User               auth.User `gorm:"foreignKey:RequestorID"`
 	RequestDescription string
 	Quantity           uint8
 	RequestDate        time.Time
