@@ -1,17 +1,16 @@
 package main
 
 import (
-
 	"log"
 	"net/http"
 	"os"
 
-
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 
-	"github.com/joho/godotenv"
 	auth "github.com/DrAnonymousNet/foodshare/Auth"
 	core "github.com/DrAnonymousNet/foodshare/Core"
+	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +29,10 @@ func main(){
 	db.AutoMigrate(getModels()...)
 
 	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+
 
 	router.Mount("/v1", auth.AuthRoutes())
 
@@ -37,6 +40,7 @@ func main(){
 		Handler: router,
 		Addr : ":"+portString,
 	}
-	srv.ListenAndServe()
+	log.Printf("Starting server at port %v", portString)
 
+	srv.ListenAndServe()
 }
