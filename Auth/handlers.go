@@ -42,19 +42,19 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, user)
 }
 
-func generateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
-  
+func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
+
 	type user_auth_data struct {
 		username string
 		password string
 	}
-  //Decode the users post data
+	//Decode the users post data
 	auth_data := &user_auth_data{}
 	if err := render.DecodeJSON(r.Body, auth_data); err != nil {
 		core.ErrInvalidRequest(err)
 	}
 
-  //Retrieve the user with the username
+	//Retrieve the user with the username
 	var user User
 	core.DB.Model(&User{}).Where("username = ?", auth_data.username).First(&user)
 
@@ -62,12 +62,11 @@ func generateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		core.ErrInvalidRequest(err)
 	}
-  //Generate token for the user
+	//Generate token for the user
 	tokenAuth := jwtauth.New("HS256", []byte(os.Getenv("SECRET")), nil)
 	_, tokenString, _ := tokenAuth.Encode(map[string]interface{}{auth_data.username: auth_data.password})
 
 	render.Status(r, 200)
-  render.JSON(w, r, map[string]string{"token":tokenString})
+	render.JSON(w, r, map[string]string{"token": tokenString})
 
 }
-

@@ -13,6 +13,7 @@ import (
 type CreateUserRequest struct{
 	FirstName string 
 	LastName string 
+	FullName string
 	DOB time.Time 
 	Gender string 
 	Email string 
@@ -36,6 +37,7 @@ func (c *CreateUserRequest)Bind(r *http.Request) error{
 
 	c.FirstName = strings.ToTitle(c.FirstName)
 	c.LastName = strings.ToTitle(c.LastName)
+	c.FullName = c.FirstName + c.LastName
 	return nil
 	
 }
