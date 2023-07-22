@@ -2,8 +2,7 @@ package foodshare
 
 import "github.com/go-chi/chi"
 
-func DonationRouters(r chi.Router){
-	
+func DonationRouters(r chi.Router) {
 
 }
 
@@ -19,6 +18,6 @@ func DonationRouters(r chi.Router){
 //		r.Delete("/", DeleteArticle) // DELETE /articles/123
 //	})
 
-	// GET /articles/whats-up
+// GET /articles/whats-up
 //	r.With(ArticleCtx).Get("/{articleSlug:[a-z-]+}", GetArticle)
 //})

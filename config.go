@@ -1,9 +1,9 @@
 package main
 
 import (
+	auth "github.com/DrAnonymousNet/foodshare/Auth"
 	foodshare "github.com/DrAnonymousNet/foodshare/FoodShareApp"
 	notifications "github.com/DrAnonymousNet/foodshare/Notifications"
-	auth "github.com/DrAnonymousNet/foodshare/Auth"
 )
 
 //Model Registration

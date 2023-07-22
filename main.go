@@ -16,14 +16,13 @@ import (
 
 var db *gorm.DB // Assume you have a GORM database connection
 
-
-func main(){
+func main() {
 	godotenv.Load(".env")
 
 	portString := os.Getenv("portString")
 
 	db, err := core.SetupDatabase()
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	db.AutoMigrate(getModels()...)
@@ -33,12 +32,11 @@ func main(){
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
-
 	router.Mount("/v1", auth.AuthRoutes())
 
 	srv := &http.Server{
 		Handler: router,
-		Addr : ":"+portString,
+		Addr:    ":" + portString,
 	}
 	log.Printf("Starting server at port %v", portString)
 
