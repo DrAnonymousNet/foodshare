@@ -10,10 +10,10 @@ import (
 
 type Donation struct {
 	gorm.Model
-	UID             uuid.UUID
+	UID             uuid.UUID `gorm:"default:generate_uuid_v4"`
 	Title           string
 	DonorID         uint8
-	User            auth.User    `gorm:"foreignKey:DonorID"`
+	User            auth.User        `gorm:"foreignKey:DonorID"`
 	DonatedObjType  DonatableObjType `gorm:"type:ENUM('FoodStuff', 'Cloths', 'MedicalSupplies', 'SchoolSupplies', 'PersonalCareSupplies', 'BooksAndToys')"`
 	DonationDate    time.Time
 	PickUpAddress   DonationStatusType `gorm:"type:ENUM('Pending', 'PickedUp')"`
@@ -22,13 +22,13 @@ type Donation struct {
 
 type DonationRequest struct {
 	gorm.Model
-	UID                uuid.UUID
+	UID                uuid.UUID `gorm:"default:generate_uuid_v4"`
 	RequestorID        uint8
 	User               auth.User `gorm:"foreignKey:RequestorID"`
 	RequestDescription string
 	Quantity           uint8
 	RequestDate        time.Time
 	DeliveryAddress    string
-	RequestStatus      RequestStatusType `gorm:"type:ENUM('PartiallyFulfilled, 'FullyFulfilled')"`
+	RequestStatus      RequestStatusType `gorm:"type:ENUM('PartiallyFulfilled', 'FullyFulfilled')"`
 	RequestFrom        RequestFromType   `gorm:"type:ENUM('WareHouse', 'Community')"`
 }
