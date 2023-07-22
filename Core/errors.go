@@ -21,6 +21,7 @@ func (e *ErrResponse) Render(w http.ResponseWriter, r *http.Request) error {
 }
 
 func ErrInvalidRequest(err error) render.Renderer {
+	// Returns a 400 Bad Request response
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: 400,
