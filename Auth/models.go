@@ -7,21 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type Role string
-
-const (
-	Male   Role = "Male"
-	Female Role = "Female"
-)
 
 type User struct {
 	gorm.Model
-	UID          uuid.UUID `gorm:"default:generate_uuid_v4"`
+	UID          uuid.UUID `pg:"type:uuid"`
 	FirstName    string    `gorm:"not null"`
 	LastName     string    `gorm:"not null"`
 	FullName     string
 	DOB          time.Time `gorm:"null"`
-	Gender       string    `gorm:":not null:type:ENUM('Male', 'Female')"`
+	Gender       Gender    `sql:"type:gender"`
 	Email        string    `gorm:"not null;unique"`
 	Password     string    `gorm:"-"`
 	PasswordHash string    `gorm:"not null"`

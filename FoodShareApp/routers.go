@@ -2,7 +2,20 @@ package foodshare
 
 import "github.com/go-chi/chi"
 
-func DonationRouters(r chi.Router) {
+func DonationRoutes() chi.Router {
+	d := SetViewSet()
+	r := chi.NewRouter()
+	return r.Route("/donations", func(r chi.Router) {
+		r.Get("/", d.ListDonations)
+		r.Post("/create", d.CreateDonation)
+		//r.Get("/search", SearchDonations)
+
+		r.Route("/{uid}", func(r chi.Router) {
+			r.Get("/", d.GetDonation)
+			r.Patch("/", d.UpdateDonation)
+			r.Delete("/", d.DeleteDonation)
+		})
+	})
 
 }
 

@@ -1,0 +1,209 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server celler server.",
+        "title": "Swagger Example API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8000",
+    "basePath": "/api/v1",
+    "paths": {
+        "/donations": {
+            "get": {
+                "description": "list donations",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "List donations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/foodshare.DonationSerializer"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create a donation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a donation",
+                "parameters": [
+                    {
+                        "description": "Donation",
+                        "name": "requestBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/foodshare.DonationSerializer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/foodshare.DonationSerializer"
+                        }
+                    }
+                }
+            }
+        },
+        "/donations/{uid}": {
+            "get": {
+                "description": "get a donation",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a donation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Donation UID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/foodshare.DonationSerializer"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete a donation",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a donation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Donation UID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "update a donation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a donation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Donation UID",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "foodshare.DonatableObjType": {
+            "type": "string",
+            "enum": [
+                "FoodStuff",
+                "Cloths",
+                "MedicalSupplies",
+                "SchoolSupplies",
+                "PersonalCareSupplies",
+                "BooksAndToys"
+            ],
+            "x-enum-varnames": [
+                "FoodStuff",
+                "Cloths",
+                "MedicalSupplies",
+                "SchoolSupplies",
+                "PersonalCareSupplies",
+                "BooksAndToys"
+            ]
+        },
+        "foodshare.DonationSerializer": {
+            "type": "object",
+            "required": [
+                "donation_date",
+                "donor_id",
+                "pickup_address",
+                "title"
+            ],
+            "properties": {
+                "donation_date": {
+                    "type": "string"
+                },
+                "donation_type": {
+                    "$ref": "#/definitions/foodshare.DonatableObjType"
+                },
+                "donor_id": {
+                    "type": "integer"
+                },
+                "item_description": {
+                    "type": "string"
+                },
+                "pickup_address": {
+                    "$ref": "#/definitions/foodshare.DonationStatusType"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "foodshare.DonationStatusType": {
+            "type": "string",
+            "enum": [
+                "Pending",
+                "PickedUp"
+            ],
+            "x-enum-varnames": [
+                "Pending",
+                "PickedUp"
+            ]
+        }
+    },
+    "securityDefinitions": {
+        "BasicAuth": {
+            "type": "basic"
+        }
+    },
+    "externalDocs": {
+        "description": "OpenAPI",
+        "url": "https://swagger.io/resources/open-api/"
+    }
+}
