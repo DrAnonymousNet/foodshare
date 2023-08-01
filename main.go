@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"syscall"
 	"time"
-	"os/signal"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -24,17 +24,16 @@ import (
 	"gorm.io/gorm"
 )
 
-
 func GetModels() []interface{} {
 	Models := []interface{}{
 		auth.User{},
+		auth.JwtToken{},
 		notifications.Notification{},
 		foodshare.DonationRequest{},
 		foodshare.Donation{},
 	}
 	return Models
 }
-
 
 var db *gorm.DB // Assume you have a GORM database connection
 
@@ -115,51 +114,56 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(cors.Handler(
 		cors.Options{
-	AllowedOrigins: []string{"https://*", "http://*"},
-	AllowedMethods: []string{"GET", "POST", "DELETE","PUT", "PATCH", "OPTIONS"},
-	AllowedHeaders: []string{"*"},
-	ExposedHeaders: []string{"link"},
-	AllowCredentials: false,
-	MaxAge: 300,
+			AllowedOrigins:   []string{"https://*", "http://*"},
+			AllowedMethods:   []string{"GET", "POST", "DELETE", "PUT", "PATCH", "OPTIONS"},
+			AllowedHeaders:   []string{"*"},
+			ExposedHeaders:   []string{"link"},
+			AllowCredentials: false,
+			MaxAge:           300,
 		}),
 	)
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
-	
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-  
-	  w.Header().Set("Content-Type", "text/plain")
 
-	  w.Write([]byte("Hello World!"))
-  
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "text/plain")
+
+		w.Write([]byte("Hello World!"))
+
 	})
 	router.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("http://127.0.0.1:8000/swagger/doc.json"), //The url pointing to API definition
 	))
+	router.Post("/api/v1/auth/login/", auth.GenerateJWTTokenHandler)
+
 	router.Post("/api/v1/auth/", auth.CreateUser)
-	router.Post("/api/v1/auth/login", auth.GenerateJWTTokenHandler)
 
 	//router.Mount("/api/v1/auth", auth.AuthRoutes())
-	router.Mount("/api/v1/foodshare", foodshare.DonationRoutes())
+	d := foodshare.SetViewSet()
+	router.With(auth.UserContext).Post("/api/v1/foodshare/donations/", d.CreateDonation)
+	router.With(auth.UserContext).Get("/api/v1/foodshare/donations/", d.ListDonations)
+	router.With(auth.UserContext).Get("/api/v1/foodshare/donations/{uid}/", d.GetDonation)
+	router.With(auth.UserContext).Patch("/api/v1/foodshare/donations/{uid}/", d.UpdateDonation)
 
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + portString,
 	}
 	log.Printf("Starting server at port %v, %v", portString, srv.Addr)
-	
-		// Channel to signal server shutdown
+
+	// Channel to signal server shutdown
 	shutdownChan := make(chan struct{})
 
-		// Run the server in a separate goroutine
+	// Run the server in a separate goroutine
 	go func() {
-			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				fmt.Printf("Error starting the server: %s\n", err)
-				close(shutdownChan) // Signal shutdown if an error occurs during server startup
-			}
-		}()
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Printf("Error starting the server: %s\n", err)
+			close(shutdownChan) // Signal shutdown if an error occurs during server startup
+		}
+	}()
 	// Capture OS signals for graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
