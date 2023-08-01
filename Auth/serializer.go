@@ -78,7 +78,7 @@ func (d *CreateUserSerializer) Save(r *http.Request) error {
 type LoginSerializer struct {
 	Email    string `json:"email" validate:"required"`
 	Password string `json:"password" validate:"required"`
-	user *User `json:"-"`
+	user     *User  `json:"-"`
 }
 
 func (l *LoginSerializer) Bind(r *http.Request) error {
@@ -123,7 +123,7 @@ func (l *LoginSerializer) Save(r *http.Request) (string, error) {
 		UID:       uuid.New(),
 		Token:     tokenString,
 		ExpiresAt: token.Expiration(),
-		UserID:    l.user.ID,   
+		UserID:    l.user.ID,
 	}
 	err = core.DB.Model(&JwtToken{}).Create(&jwtToken).Error
 	if err != nil {

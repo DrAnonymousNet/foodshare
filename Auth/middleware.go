@@ -10,7 +10,7 @@ import (
 
 //var UserCtxKey = &core.ContextKey{Name:"User"}
 
-func UserContext(next http.Handler) http.Handler{
+func UserContext(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		authorizationH := r.Header.Get("Authorization")
@@ -19,7 +19,7 @@ func UserContext(next http.Handler) http.Handler{
 			if err != nil {
 				render.Status(r, http.StatusBadRequest)
 				render.JSON(w, r, map[string]string{"error": "Invalid request " + fmt.Sprintf("%v", err)})
-				return 
+				return
 			}
 			user, err := GetUserFromToken(token)
 			if err != nil {
@@ -29,7 +29,7 @@ func UserContext(next http.Handler) http.Handler{
 			}
 			ctx = context.WithValue(ctx, "User", user)
 			next.ServeHTTP(w, r.WithContext(ctx))
-		}else{
+		} else {
 			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, map[string]string{"error": "Authorization header not found"})
 		}

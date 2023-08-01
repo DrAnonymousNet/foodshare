@@ -14,7 +14,7 @@ type User struct {
 	LastName     string    `gorm:"not null"`
 	FullName     string
 	DOB          time.Time `gorm:"null"`
-	Gender       string//Gender    `sql:"type:gender"`
+	Gender       string    //Gender    `sql:"type:gender"`
 	Email        string    `gorm:"not null;unique"`
 	Password     string    `gorm:"-"`
 	PasswordHash string    `gorm:"not null"`

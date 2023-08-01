@@ -24,7 +24,6 @@ func (u *User) ComparePassword(password string) error {
 	return err //returns nil if error is nil
 }
 
-
 func ParseAuthorizationHeader(header string) (string, string, error) {
 	realm, token := strings.Split(header, " ")[0], strings.Split(header, " ")[1]
 	if realm != "Bearer" {
@@ -33,7 +32,7 @@ func ParseAuthorizationHeader(header string) (string, string, error) {
 	return realm, token, nil
 }
 
-func GetUserFromToken(tokenString string) (*User, error){
+func GetUserFromToken(tokenString string) (*User, error) {
 	token := &JwtToken{}
 	err := core.DB.Model(&JwtToken{}).Where("token = ?", tokenString).First(&token).Error
 	if err != nil {

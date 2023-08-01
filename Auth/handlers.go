@@ -2,8 +2,8 @@ package auth
 
 import (
 	"fmt"
-	"net/http"
 	"github.com/go-chi/render"
+	"net/http"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -44,9 +44,8 @@ func GenerateJWTTokenHandler(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, map[string]string{
 			"error": "Unable to generate token " + fmt.Sprintf("%v", err),
 		})
-		return 
+		return
 	}
-
 
 	render.Status(r, 200)
 	render.JSON(w, r, map[string]string{"token": tokenString})
