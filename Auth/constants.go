@@ -1,6 +1,5 @@
 package auth
 
-
 type Gender string
 
 const (

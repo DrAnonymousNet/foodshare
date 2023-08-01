@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-
 type User struct {
 	gorm.Model
 	UID          uuid.UUID `pg:"type:uuid"`
@@ -15,7 +14,7 @@ type User struct {
 	LastName     string    `gorm:"not null"`
 	FullName     string
 	DOB          time.Time `gorm:"null"`
-	Gender       Gender    `sql:"type:gender"`
+	Gender       string//Gender    `sql:"type:gender"`
 	Email        string    `gorm:"not null;unique"`
 	Password     string    `gorm:"-"`
 	PasswordHash string    `gorm:"not null"`
@@ -27,10 +26,10 @@ func (u *User) isModel() bool {
 
 type JwtToken struct {
 	gorm.Model
-	UID       uuid.UUID `gorm:"default:generate_uuid_v4"`
+	UID       uuid.UUID `pg:"type:uuid"`
 	Token     string
 	ExpiresAt time.Time
-	UserID    uint8
+	UserID    uint
 	User      User
 }
 

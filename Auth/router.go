@@ -8,4 +8,3 @@ func AuthRoutes() chi.Router {
 	r.Post("/login", GenerateJWTTokenHandler)
 	return r
 }
-
