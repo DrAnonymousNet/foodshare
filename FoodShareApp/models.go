@@ -12,11 +12,11 @@ type Donation struct {
 	gorm.Model
 	UID             uuid.UUID
 	Title           string
-	DonorID         uint8
-	User            *auth.User        `gorm:"foreignKey:DonorID;references:ID"`
-	DonatedObjType  DonatableObjType `sql:"type:donatable_obj_type"`
+	DonorID         uint
+	User            *auth.User `gorm:"foreignKey:DonorID;references:ID"`
+	DonatedObjType  string     //DonatableObjType `sql:"type:enum_donatable_obj_type"`
 	DonationDate    time.Time
-	PickUpAddress   DonationStatusType `sql:"type:donation_status_type"`
+	PickUpAddress   string //DonationStatusType `sql:"type:enum_donation_status_type"`
 	ItemDescription string
 }
 
@@ -29,6 +29,6 @@ type DonationRequest struct {
 	Quantity           uint8
 	RequestDate        time.Time
 	DeliveryAddress    string
-	RequestStatus      RequestStatusType `sql:"type:request_status_type"`
-	RequestFrom        RequestFromType   `sql:"type:request_from_type"`
+	RequestStatus      string //RequestStatusType `sql:"type:request_status_type"`
+	RequestFrom        string //RequestFromType   `sql:"type:request_from_type"`
 }

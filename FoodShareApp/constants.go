@@ -2,7 +2,7 @@ package foodshare
 
 import (
 	"database/sql/driver"
-
+	_ "github.com/lib/pq"
 )
 
 type DonatableObjType string
@@ -41,7 +41,6 @@ func (e DonationStatusType) Value() (driver.Value, error) {
 	return string(e), nil
 }
 
-
 type RequestFromType string
 
 const (
@@ -60,12 +59,10 @@ func (e RequestFromType) Value() (driver.Value, error) {
 
 type RequestStatusType string
 
-
 const (
 	PartiallyFulfilled RequestStatusType = "PartiallyFulfilled"
 	FullyFulfilled     RequestStatusType = "FullyFulfilled"
 )
-
 
 func (e *RequestStatusType) Scan(value interface{}) error {
 	*e = RequestStatusType(value.([]byte))
