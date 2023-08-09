@@ -175,7 +175,6 @@ func (d *DonationHandler) ListDonations(w http.ResponseWriter, r *http.Request) 
 	for i, item := range donationListresponsePayload {
 		donationsList[i] = item
 	}
-	
 
 	render.Status(r, http.StatusOK)
 	render.RenderList(w, r, donationsList)
