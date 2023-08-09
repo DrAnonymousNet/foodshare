@@ -3,7 +3,6 @@ package foodshare
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	//"fmt"
 	"net/http"
@@ -12,6 +11,8 @@ import (
 
 	auth "github.com/DrAnonymousNet/foodshare/Auth"
 	core "github.com/DrAnonymousNet/foodshare/Core"
+	"github.com/go-playground/validator"
+
 	//"gorm.io/gorm"
 
 	//"github.com/go-playground/validator/v10"
@@ -21,7 +22,7 @@ import (
 type DonationSerializer struct {
 	UID             uuid.UUID  `json:"-"`
 	Title           string     `json:"title" validate:"required"`
-	DonorID         uint       `json:"-"`
+	DonorUID         uuid.UUID `json:"-"`
 	DonatedObjType  string     `json:"donation_obj_type"`
 	DonationDate    time.Time  `json:"donation_date" validate:"required"`
 	PickUpAddress   string     `json:"pick_up_address" validate:"required"`
@@ -32,75 +33,94 @@ type DonationSerializer struct {
 	// This indirection avoids having to allocate a new copy of Donation.
 }
 
+// This renders the data to be rendered and adds the read only fields.
+// It implements the Render method and compose of the Serializer class
 type DonationResponse struct {
 	DonationSerializer
 	UID      uuid.UUID `json:"uid"`
 	DonorUID uuid.UUID `json:"donor_uid"`
 }
 
+// This function retrieves the fields that needs to be renders in the Json Response.
+// It creates the DonationResponse objects from the data in the DonationSerializer. 
 func (d *DonationSerializer) ResponsePayload(r *http.Request) DonationResponse {
-	user := r.Context().Value("User").(*auth.User)
-	responsePayload := DonationResponse{
+	
+	//user := r.Context().Value("User").(*auth.User)
+	if d.Instance != nil {
+		d.UID = d.Instance.UID
+		d.Title = d.Instance.Title
+		d.DonatedObjType = d.Instance.DonatedObjType
+		d.DonationDate = d.Instance.DonationDate
+		d.PickUpAddress = d.Instance.PickUpAddress
+		d.ItemDescription = d.Instance.ItemDescription
+		d.DonorUID = d.Instance.DonorUID	
+	}
+
+		responsePayload := DonationResponse{
 		DonationSerializer: *d,
 		UID:                d.UID,
-		DonorUID:           user.UID,
+		DonorUID:           d.Instance.DonorUID,
 	}
 	return responsePayload
 }
+
+// This Binds the data that are not sent as part of request body but are 
+// required to create the model associated with the serializer. It also calls
+// the validate method.
 func (d *DonationSerializer) Bind(r *http.Request) error {
 	// The Bind method calls the validate method to validate the stuct fields as describe above
 
-	//err := d.Validate(r)
-	//if err != nil {
-	//	return err
-	//}
+	err := d.Validate(r)
+	if err != nil {
+		return err
+	}
 	Donor := r.Context().Value("User").(*auth.User)
-	d.DonorID = Donor.ID
+	d.DonorUID = Donor.UID
 
 	return nil
 }
 
+// Validate the tags in the request body
+// The validation of the serializer fields includes the validation from the validate struct tags
+// and the validate{field name} that is implemented on the struct.
 func (d *DonationSerializer) Validate(r *http.Request) error {
-	// Validate the tags in the request body
-	// The validation of the serializer fields includes the validation from the validate struct tags
-	// and the validate{field name} that is implemented on the struct.
 
-	//errorMessage := ""
+	errorMessage := ""
 
-	//validate := validator.New()
-	//if err := validate.Struct(d); err != nil {
-	//	validationErrors := err.(validator.ValidationErrors)
-	// Return validation errors to the client
-	//	for _, err := range validationErrors {
-	//		errorMessage += fmt.Sprintf("Field %s: Validation Error (%s) \n", err.Field(), err.Tag())
-	//	}
-	//}
+	validate := validator.New()
+	if err := validate.Struct(d); err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+	//Return validation errors to the client
+		for _, err := range validationErrors {
+			errorMessage += fmt.Sprintf("Field %s: Validation Error (%s) \n", err.Field(), err.Tag())
+		}
+	}
 
-	// Validate Fields in of the struct
-	//donationSerializer := reflect.TypeOf(*d)
-	// Check if the struct is a struct
-	//if donationSerializer.Kind() == reflect.Struct {
-	// Loop through the fields of the struct
-	//	for i := 0; i < donationSerializer.NumField() - 1; i++ {
+	//Validate Fields in of the struct
+	donationSerializer := reflect.TypeOf(*d)
+	//Check if the struct is a struct
+	if donationSerializer.Kind() == reflect.Struct {
+	//Loop through the fields of the struct
+		for i := 0; i < donationSerializer.NumField(); i++ {
 
-	//		field := donationSerializer.Field(i)
-	//		fieldName := field.Name
-	//		value := reflect.ValueOf(donationSerializer).FieldByName(fieldName)
+			field := donationSerializer.Field(i)
+			fieldName := field.Name
+			value := reflect.ValueOf(donationSerializer).FieldByName(fieldName)
 
-	// Check if the field is valid and has a validate{field name} method
-	//		method := reflect.ValueOf(donationSerializer).MethodByName("Validate" + fieldName)
-	//		if method.IsValid() && method.Type().NumIn() == 1 {
-	//			err := method.Call([]reflect.Value{value})
-	//			if err != nil {
-	//				errorMessage += fmt.Sprintf("Field %s: Validation Error (%s) \n", fieldName, err)
-	//			}
-	//		}
-	//	}
+	//Check if the field is valid and has a validate{field name} method
+			method := reflect.ValueOf(donationSerializer).MethodByName("Validate" + fieldName)
+			if method.IsValid() && method.Type().NumIn() == 1 {
+				err := method.Call([]reflect.Value{value})
+				if err != nil {
+					errorMessage += fmt.Sprintf("Field %s: Validation Error (%s) \n", fieldName, err)
+				}
+			}
+		}
 
-	//}
-	//if errorMessage != "" {
-	//	return errors.New(errorMessage)
-	//}
+	}
+	if errorMessage != "" {
+		return errors.New(errorMessage)
+	}
 	return nil
 
 }
@@ -121,9 +141,13 @@ func (d *DonationSerializer) ValidateDonationDate(DonationDate time.Time) (time.
 	}
 	return DonationDate, nil
 }
+
+// Update the donation object
+// During the update operation, an Instance of the donation will be passed in the serializer
 func (d *DonationSerializer) Update() error {
-	// Update the donation object
-	// During the update operation, an Instance of the donation will be passed in the serializer
+	if d.Instance == nil {
+		return errors.New("an instance must be passed during update")
+	}
 
 	donationValue := reflect.ValueOf(d.Instance).Elem()
 	serializerType := reflect.TypeOf(d).Elem()
@@ -150,8 +174,8 @@ func (d *DonationSerializer) Update() error {
 			}
 		}
 	}
-	dataMap := d.GetDataMap()
-	err := core.DB.Model(&d.Instance).Updates(dataMap).Error
+	updatedField := d.GetUpdatedFields()
+	err := core.DB.Model(&d.Instance).Updates(updatedField).Error
 	if err != nil {
 		return err
 	}
@@ -167,11 +191,12 @@ func (d *DonationSerializer) Delete() error {
 	return nil
 }
 
-func (d *DonationSerializer) GetDataMap() map[string]interface{} {
+// Retrieves the fields sent in the request body of the update request
+func (d *DonationSerializer) GetUpdatedFields() map[string]interface{} {
 	data := map[string]interface{}{
 		"uid":              d.UID,
 		"title":            d.Title,
-		"donor_id":         d.DonorID,
+		"donor_uid":         d.DonorUID,
 		"donated_obj_type": d.DonatedObjType,
 		"donation_date":    d.DonationDate,
 		"pick_up_address":  d.PickUpAddress,
@@ -187,70 +212,48 @@ func (d *DonationSerializer) GetDataMap() map[string]interface{} {
 
 }
 
+// Creates the instance of the model associated with the serializer
 func (d *DonationSerializer) Save(r *http.Request) error {
-	//var user auth.User
-	//core.DB.Model(&auth.User{}).Where("ID = ?", d.DonorID)
+	//Donor := r.Context().Value("User").(*auth.User)
+	//d.DonorUID = Donor.UID
 
 	donationRequest := Donation{
 		UID:             uuid.New(),
 		Title:           d.Title,
-		DonorID:         d.DonorID,
 		DonatedObjType:  d.DonatedObjType,
 		DonationDate:    d.DonationDate,
 		PickUpAddress:   d.PickUpAddress,
 		ItemDescription: d.ItemDescription,
-		//User:            &user,
+		DonorUID:        d.DonorUID,
 	}
 	err := core.DB.Model(&Donation{}).Create(&donationRequest).Error
 	if err != nil {
 		return err
 	}
 	d.UID = donationRequest.UID
+	d.Instance = &donationRequest
 
 	return nil
 }
-func (d *DonationResponse) Render(w http.ResponseWriter, r *http.Request) error {
-	if d.Instance != nil {
-		donationObj := reflect.TypeOf(d.Instance).Elem()
-		if donationObj.Kind() != reflect.Struct {
-			log.Println("Invalid type:", donationObj)
-			return errors.New("invalid type")
-		}
-
-		donationValue := reflect.ValueOf(d.Instance).Elem()
-		donationSerializer := reflect.ValueOf(d).Elem()
-
-		for i := 0; i < donationObj.NumField(); i++ {
-			field := donationObj.Field(i)
-			fieldName := field.Name
-
-			// Skip the "Model" field to avoid the panic
-			if fieldName == "Model" {
-				continue
-			}
-			if fieldName == "User" {
-				//donationSerializer.FieldByName("DonorID").Set(donationValue.FieldByName("User").FieldByName("ID"))
-				continue
-			}
-
-			// Get the value of the field in the donation object
-			value := donationValue.FieldByName(fieldName)
-			fmt.Printf("Field Name: %s, Value: %v, Type: %s\n", fieldName, value.Interface(), value.Type())
-
-			if value.IsValid() && value.CanSet() {
-				// Set the value of the field in the donation response
-				donationSerializer.FieldByName(fieldName).Set(value)
-			}
-		}
-
-		// Special handling for gorm.Model
-		//if modelField := donationValue.FieldByName("Model"); modelField.IsValid() && modelField.Type() == reflect.TypeOf(gorm.Model{}) {
-		//	donationSerializer.FieldByName("ID").Set(modelField.FieldByName("ID"))
-		//	donationSerializer.FieldByName("CreatedAt").Set(modelField.FieldByName("CreatedAt"))
-		//	donationSerializer.FieldByName("UpdatedAt").Set(modelField.FieldByName("UpdatedAt"))
-		//	donationSerializer.FieldByName("DeletedAt").Set(modelField.FieldByName("DeletedAt"))
-		//}
-	}
-
+func (response DonationResponse) Render(w http.ResponseWriter, r *http.Request) error {
+	
 	return nil
+}
+
+func ListResponsePayload(r *http.Request, donations []Donation) []DonationResponse {
+	var responsePayload []DonationResponse
+	for _, donation := range donations {
+		donationSerializer := DonationSerializer{
+			UID:             donation.UID,
+			Title:           donation.Title,
+			DonorUID:         donation.DonorUID,
+			DonatedObjType:  donation.DonatedObjType,
+			DonationDate:    donation.DonationDate,
+			PickUpAddress:   donation.PickUpAddress,
+			ItemDescription: donation.ItemDescription,
+			Instance:        &donation,
+		}
+		responsePayload = append(responsePayload, donationSerializer.ResponsePayload(r))
+	}
+	return responsePayload
 }

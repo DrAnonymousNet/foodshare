@@ -26,7 +26,7 @@ func (u *User) isModel() bool {
 
 type JwtToken struct {
 	gorm.Model
-	UID       uuid.UUID `pg:"type:uuid"`
+	UID       uuid.UUID `pg:"type:uuid" gorm:"unique"`
 	Token     string
 	ExpiresAt time.Time
 	UserID    uint

@@ -169,11 +169,16 @@ func (d *DonationHandler) ListDonations(w http.ResponseWriter, r *http.Request) 
 	}
 	qs.Find(&donations)
 	log.Println(donations)
-	serializer := DonationSerializer{Instances: donations}
-	responsePayload := serializer.ResponsePayload(r)
+	donationListresponsePayload := ListResponsePayload(r, donations)
+
+	donationsList := make([]render.Renderer, len(donationListresponsePayload))
+	for i, item := range donationListresponsePayload {
+		donationsList[i] = item
+	}
+	
 
 	render.Status(r, http.StatusOK)
-	render.Render(w, r, &responsePayload)
+	render.RenderList(w, r, donationsList)
 }
 
 func (d *DonationHandler) getObject(r *http.Request) (Donation, error) {

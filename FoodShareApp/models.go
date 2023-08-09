@@ -12,8 +12,8 @@ type Donation struct {
 	gorm.Model
 	UID             uuid.UUID
 	Title           string
-	DonorID         uint
-	User            *auth.User `gorm:"foreignKey:DonorID;references:ID"`
+	DonorUID         uuid.UUID
+	User            *auth.User `gorm:"foreignKey:DonorUID;references:UID"`
 	DonatedObjType  string     //DonatableObjType `sql:"type:enum_donatable_obj_type"`
 	DonationDate    time.Time
 	PickUpAddress   string //DonationStatusType `sql:"type:enum_donation_status_type"`
