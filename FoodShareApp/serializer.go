@@ -95,7 +95,7 @@ func (d *DonationSerializer) Validate(r *http.Request) error {
 
 	// Validate Fields in the struct
 	donationValue := reflect.ValueOf(d).Elem() // Get the actual struct value
-	donationType := donationValue.Type()        // Get the type of the struct
+	donationType := donationValue.Type()       // Get the type of the struct
 
 	// Loop through the fields of the struct
 	for i := 0; i < donationType.NumField(); i++ {
@@ -127,8 +127,6 @@ func (d *DonationSerializer) Validate(r *http.Request) error {
 	}
 	return nil
 }
-
-
 
 func (d *DonationSerializer) ValidateDonationDate(DonationDate time.Time) (time.Time, error) {
 	if d.DonationDate.Before(time.Now()) {
