@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	//"fmt"
 	"net/http"
 	"reflect"
 	"time"
@@ -14,16 +13,25 @@ import (
 	core "github.com/DrAnonymousNet/foodshare/Core"
 	"github.com/go-playground/validator"
 
-	//"gorm.io/gorm"
 
-	//"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
+type DonationRequestSerializer struct {
+	UID                uuid.UUID 
+	RequestorID        uint8
+	User               auth.User 
+	RequestDescription string
+	Quantity           uint8
+	RequestDate        time.Time
+	DeliveryAddress    string
+	RequestStatus      string //RequestStatusType `sql:"type:request_status_type"`
+	RequestFrom        string //RequestFromType   `sql:"type:request_from_type"`
+}
 type DonationSerializer struct {
 	UID             uuid.UUID  `json:"-"`
 	Title           string     `json:"title" validate:"required"`
-	DonorUID        uuid.UUID  `json:"-"`
+	DonorUID        uuid.UUID  `json:"-" serializer:"readonly"`
 	DonatedObjType  string     `json:"donation_obj_type"`
 	DonationDate    time.Time  `json:"donation_date" validate:"required"`
 	PickUpAddress   string     `json:"pick_up_address" validate:"required"`
@@ -33,6 +41,8 @@ type DonationSerializer struct {
 	// Also note that we only include a pointer to the original Donation struct in our Request struct.
 	// This indirection avoids having to allocate a new copy of Donation.
 }
+
+
 
 // This renders the data to be rendered and adds the read only fields.
 // It implements the Render method and compose of the Serializer class
@@ -82,8 +92,10 @@ func (d *DonationSerializer) Bind(r *http.Request) error {
 }
 
 func (d *DonationSerializer) Validate(r *http.Request) error {
-	errorMessage := ""
 
+	errorMessage := ""
+	// This is not an update operation
+	if d.Instance == nil{
 	validate := validator.New()
 	if err := validate.Struct(d); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
@@ -92,11 +104,12 @@ func (d *DonationSerializer) Validate(r *http.Request) error {
 			errorMessage += fmt.Sprintf("Field %s: Validation Error (%s) \n", err.Field(), err.Tag())
 		}
 	}
+	}
 
 	// Validate Fields in the struct
 	donationValue := reflect.ValueOf(d).Elem() // Get the actual struct value
 	donationType := donationValue.Type()       // Get the type of the struct
-
+	updatedFields := d.GetUpdatedFields()
 	// Loop through the fields of the struct
 	for i := 0; i < donationType.NumField(); i++ {
 		field := donationType.Field(i)
@@ -113,7 +126,8 @@ func (d *DonationSerializer) Validate(r *http.Request) error {
 
 		// Check if the field is valid and has a validate{field name} method
 		method := reflect.ValueOf(d).MethodByName("Validate" + fieldName)
-		if method.IsValid() && method.Type().NumIn() == 1 {
+		_, ok := updatedFields[fieldName]
+		if method.IsValid() && method.Type().NumIn() == 1 && ok {
 			err := method.Call([]reflect.Value{value})
 			log.Println(err[1])
 			if err[1].Interface() != nil { // Check if the error is not nil
@@ -175,7 +189,7 @@ func (d *DonationSerializer) Update() error {
 	return nil
 }
 
-func (d *DonationSerializer) Delete() error {
+ func (d *DonationSerializer) Delete() error {
 	// Delete the donation object
 	err := core.DB.Model(&d.Instance).Delete(&d.Instance).Error
 	if err != nil {
@@ -184,8 +198,8 @@ func (d *DonationSerializer) Delete() error {
 	return nil
 }
 
-// Retrieves the fields sent in the request body of the update request
-func (d *DonationSerializer) GetUpdatedFields() map[string]interface{} {
+// // Retrieves the fields sent in the request body of the update request
+ func (d *DonationSerializer) GetUpdatedFields() map[string]interface{} {
 	data := map[string]interface{}{
 		"uid":              d.UID,
 		"title":            d.Title,
@@ -205,8 +219,8 @@ func (d *DonationSerializer) GetUpdatedFields() map[string]interface{} {
 
 }
 
-// Creates the instance of the model associated with the serializer
-func (d *DonationSerializer) Save(r *http.Request) error {
+// // Creates the instance of the model associated with the serializer
+ func (d *DonationSerializer) Save(r *http.Request) error {
 	//Donor := r.Context().Value("User").(*auth.User)
 	//d.DonorUID = Donor.UID
 
@@ -229,7 +243,6 @@ func (d *DonationSerializer) Save(r *http.Request) error {
 	return nil
 }
 func (response DonationResponse) Render(w http.ResponseWriter, r *http.Request) error {
-
 	return nil
 }
 

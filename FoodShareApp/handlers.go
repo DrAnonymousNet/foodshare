@@ -120,6 +120,7 @@ func (d *DonationHandler) UpdateDonation(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	requestBody := &DonationSerializer{Instance: &donation_object}
+	log.Println("WE ARE HEREREROER")
 	if err := render.Bind(r, requestBody); err != nil {
 		render.Render(w, r, core.ErrInvalidRequest(err))
 		return
@@ -169,15 +170,15 @@ func (d *DonationHandler) ListDonations(w http.ResponseWriter, r *http.Request) 
 	}
 	qs.Find(&donations)
 	log.Println(donations)
-	donationListresponsePayload := ListResponsePayload(r, donations)
+	//donationListresponsePayload := core.ListResponsePayload(r, donations)
 
-	donationsList := make([]render.Renderer, len(donationListresponsePayload))
-	for i, item := range donationListresponsePayload {
-		donationsList[i] = item
-	}
+	//donationsList := make([]render.Renderer, len(donationListresponsePayload))
+	//for i, item := range donationListresponsePayload {
+	//	donationsList[i] = item
+	//}
 
 	render.Status(r, http.StatusOK)
-	render.RenderList(w, r, donationsList)
+	//render.RenderList(w, r, donationsList)
 }
 
 func (d *DonationHandler) getObject(r *http.Request) (Donation, error) {

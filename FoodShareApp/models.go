@@ -4,12 +4,14 @@ import (
 	"time"
 
 	auth "github.com/DrAnonymousNet/foodshare/Auth"
+	core "github.com/DrAnonymousNet/foodshare/Core"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Donation struct {
 	gorm.Model
+	core.ModelStruct
 	UID             uuid.UUID
 	Title           string
 	DonorUID        uuid.UUID
@@ -22,6 +24,7 @@ type Donation struct {
 
 type DonationRequest struct {
 	gorm.Model
+	core.ModelStruct
 	UID                uuid.UUID `gorm:"default:generate_uuid_v4"`
 	RequestorID        uint8
 	User               auth.User `gorm:"foreignKey:RequestorID"`
